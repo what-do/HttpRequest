@@ -1,5 +1,6 @@
 package com.reyesc.whatdo;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,14 +13,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.facebook.AccessToken;
 import com.facebook.login.LoginManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -108,21 +106,23 @@ public class FragmentProfile extends FragmentExtension {
         checkBoxes.add(false);
 
 
-        //requestHttp.postRequest(view.getContext());
-        //requestHttp.getRequest(view.getContext());
         String[] interests = {"Biking", "Hopping", "Sky_Diving"};
-        //requestHttp.putObjectRequest(view.getContext(), "69" , addInterest(interests));
-        //requestHttp.putStringRequest(view.getContext());
-        addInterest(interests);
+        //updateInterest(interests);
+        createUser();
 
     }
 
-    public void addInterest(String[] interests) throws JSONException {
+    public void updateInterest(String[] interests) throws JSONException {
         JSONArray jsonArray = new JSONArray();
         for(String i : interests){
             jsonArray.put(i);
         }
         RequestHttp requestHttp = RequestHttp.getRequestHttp();
-        requestHttp.putStringRequest(view.getContext(), mAccessToken.getUserId(), jsonArray);
+        requestHttp.putStringRequest(view.getContext(), mAccessToken.getUserId(), "interests", jsonArray);
+    }
+
+    public void createUser() {
+        RequestHttp requestHttp = RequestHttp.getRequestHttp();
+        requestHttp.postRequest(view.getContext(), mAccessToken.getUserId(), "Leigh");
     }
 }
