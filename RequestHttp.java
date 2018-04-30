@@ -3,6 +3,7 @@ package com.reyesc.whatdo;
 import android.content.Context;
 import android.util.Log;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -26,18 +27,24 @@ import static com.android.volley.VolleyLog.TAG;
 
 public class RequestHttp {
 
-    private RequestQueue mRequestQueue;
+    private static RequestQueue mRequestQueue;
 
     private StringRequest mStringRequest;
 
     private JsonArrayRequest mJsonArrayRequest;
 
 
-    private String userUrl = "http://civil-ivy-200504.appspot.com/users";
+    private String userUrl = "http://civil-ivy-200504.appspot.com/users/";
+
+    private String basicUrl = "http://civil-ivy-200504.appspot.com/";
 
     private RequestHttp(){}
 
     private static RequestHttp requestHttp;
+
+    public interface VolleyCallback {
+        void onSuccessResponse(String result);
+    }
 
     public static RequestHttp getRequestHttp(){
         if (requestHttp == null){
@@ -46,17 +53,30 @@ public class RequestHttp {
         return requestHttp;
     }
 
+    public static RequestQueue getmRequestQueue(Context context){
+        if (mRequestQueue == null){
+            mRequestQueue = Volley.newRequestQueue(context);
+        }
+        return mRequestQueue;
+    }
 
-    public void getRequest(Context context){
 
-        mRequestQueue = Volley.newRequestQueue(context);
+    public void getRequest(Context context, String type, String task, String id, final VolleyCallback callback){
 
+        mRequestQueue = getmRequestQueue(context);
+        String getUrl = basicUrl + type + "/";
+        if (type != "") {
+            getUrl += task + "/";
+        }
+        getUrl += id;
 
-        mStringRequest = new StringRequest(Request.Method.GET, userUrl, new Response.Listener<String>() {
+        Log.i(TAG, "sending to: " + getUrl);
+        StringRequest mStringRequest = new StringRequest(Request.Method.GET, getUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
 
                 Log.i(TAG, "Response: "  + response.toString());
+                callback.onSuccessResponse(response);
 
             }
         }, new Response.ErrorListener() {
@@ -68,7 +88,7 @@ public class RequestHttp {
             }
         });
 
-        mJsonArrayRequest = new JsonArrayRequest(Request.Method.GET, userUrl, null, new Response.Listener<JSONArray>() {
+        /*mJsonArrayRequest = new JsonArrayRequest(Request.Method.GET, userUrl, null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 Log.i(TAG, "Response: " + response.toString());
@@ -78,18 +98,17 @@ public class RequestHttp {
             public void onErrorResponse(VolleyError error) {
                 Log.i(TAG, "Error: " + error.toString());
             }
-        });
+        }); */
 
         mRequestQueue.add(mStringRequest);
-        mRequestQueue.add(mJsonArrayRequest);
+        //mRequestQueue.add(mJsonArrayRequest);
 
     }
     public void putStringRequest(Context context, String id, String task, final JSONArray jsonArray) {
 
         mRequestQueue = Volley.newRequestQueue(context);
-        id = "123";
-        String requestUrl = userUrl + "/" + task + "/" + id;
-        Log.i(TAG, "sending to" + requestUrl);
+        String requestUrl = userUrl + task + "/12345";
+        Log.i(TAG, "sending to " + requestUrl);
         mStringRequest = new StringRequest(Request.Method.PUT, requestUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -163,6 +182,7 @@ public class RequestHttp {
         mRequestQueue = Volley.newRequestQueue(context);
 
 
+
         mStringRequest = new StringRequest(Request.Method.POST, userUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -196,7 +216,9 @@ public class RequestHttp {
                 Log.i(TAG, params.toString());
                 return params;
             }
+
         };
+
 
         mRequestQueue.add(mStringRequest);
 
